@@ -6,27 +6,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.guessingword.R
 
 @Composable
-fun ResultScreen(result: String, onPlayAgain: () -> Unit) {
+fun ResultScreen(result: String, finalWord: String, onPlayAgain: () -> Unit) {
     val context = LocalContext.current
     val showEffect = remember { mutableStateOf(false) }
 
     LaunchedEffect(result) {
-        if (result == "win") {
-            showEffect.value = true
-            MediaPlayer.create(context, R.raw.win_sound).start()
-        } else {
-            showEffect.value = true
-            MediaPlayer.create(context, R.raw.lose_sound).start()
-        }
+        showEffect.value = true
+        val sound = if (result == "win") R.raw.win_sound else R.raw.lose_sound
+        MediaPlayer.create(context, sound).start()
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -41,9 +40,44 @@ fun ResultScreen(result: String, onPlayAgain: () -> Unit) {
                 }
             }
 
-            Button(onClick = onPlayAgain) {
-                Text("Play Again")
+            Text(
+                text = "The word was: \"$finalWord\"",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+//            Button(onClick = {
+//                MediaPlayer.create(context, R.raw.touch).start()
+//                onPlayAgain()
+//            }) {
+//                Text("Play Again")
+//            }
+            Button(
+                onClick = {
+                    MediaPlayer.create(context, R.raw.touch).start()
+                    onPlayAgain()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = MaterialTheme.shapes.extraLarge, // Bo tròn hơn
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
+                ),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 8.dp,
+                    pressedElevation = 12.dp,
+                    focusedElevation = 10.dp
+                )
+            ) {
+                Text(
+                    text = "Play Again",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color.White
+                    )
+                )
             }
         }
     }
 }
+

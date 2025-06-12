@@ -25,7 +25,10 @@ fun GameScreen(
     val displayWord = viewModel.getDisplayWord()
 
     LaunchedEffect(gameResult) {
-        gameResult?.let { onGameOver(it) }
+        gameResult?.let {
+            val finalWord = viewModel.currentWordToGuess
+            onGameOver("$it|$finalWord") // Truyền cả kết quả và từ cần đoán
+        }
     }
 
     Column(

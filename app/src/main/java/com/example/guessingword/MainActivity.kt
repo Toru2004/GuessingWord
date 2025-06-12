@@ -66,12 +66,17 @@ fun WordGuessApp() {
             "result/{outcome}",
             arguments = listOf(navArgument("outcome") { type = NavType.StringType })
         ) { backStackEntry ->
-            val outcome = backStackEntry.arguments?.getString("outcome") ?: "lose"
-            ResultScreen(result = outcome) {
+            val fullResult = backStackEntry.arguments?.getString("outcome") ?: "lose|unknown"
+            val (outcome, word) = fullResult.split("|").let {
+                Pair(it.getOrElse(0) { "lose" }, it.getOrElse(1) { "unknown" })
+            }
+
+            ResultScreen(result = outcome, finalWord = word) {
                 navController.popBackStack("start", inclusive = false)
                 navController.navigate("start")
             }
         }
+
     }
 }
 
