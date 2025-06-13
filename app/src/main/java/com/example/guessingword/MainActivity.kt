@@ -56,10 +56,18 @@ fun WordGuessApp() {
 
         // Màn hình chơi game
         composable("game") {
-            GameScreen(viewModel = viewModel) { result ->
-                navController.navigate("result/$result")
-            }
+            GameScreen(
+                viewModel = viewModel,
+                onGameOver = { result ->
+                    navController.navigate("result/$result")
+                },
+                onExit = {
+                    navController.popBackStack("start", inclusive = false)
+                    navController.navigate("start")
+                }
+            )
         }
+
 
         // Màn hình kết quả
         composable(
@@ -71,11 +79,22 @@ fun WordGuessApp() {
                 Pair(it.getOrElse(0) { "lose" }, it.getOrElse(1) { "unknown" })
             }
 
-            ResultScreen(result = outcome, finalWord = word) {
-                navController.popBackStack("start", inclusive = false)
-                navController.navigate("start")
-            }
+            ResultScreen(
+                result = outcome,
+                finalWord = word,
+                onNavigateToGame = {
+                    viewModel.resetGame()
+                    navController.navigate("game") {
+                        popUpTo("start") { inclusive = false }
+                    }
+                },
+                onNavigateToMenu = {
+                    navController.popBackStack("start", inclusive = false)
+                    navController.navigate("start")
+                }
+            )
         }
+
 
     }
 }

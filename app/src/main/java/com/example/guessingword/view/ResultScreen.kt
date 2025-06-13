@@ -12,7 +12,12 @@ import androidx.compose.ui.unit.dp
 import com.example.guessingword.R
 
 @Composable
-fun ResultScreen(result: String, finalWord: String, onPlayAgain: () -> Unit) {
+fun ResultScreen(
+    result: String,
+    finalWord: String,
+    onNavigateToGame: () -> Unit,
+    onNavigateToMenu: () -> Unit // 👈 Thêm callback
+) {
     val context = LocalContext.current
     val showEffect = remember { mutableStateOf(false) }
 
@@ -30,7 +35,7 @@ fun ResultScreen(result: String, finalWord: String, onPlayAgain: () -> Unit) {
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp) // Khoảng cách giữa các thành phần
         ) {
             if (showEffect.value) {
                 if (result == "win") {
@@ -45,21 +50,16 @@ fun ResultScreen(result: String, finalWord: String, onPlayAgain: () -> Unit) {
                 style = MaterialTheme.typography.titleLarge
             )
 
-//            Button(onClick = {
-//                MediaPlayer.create(context, R.raw.touch).start()
-//                onPlayAgain()
-//            }) {
-//                Text("Play Again")
-//            }
+            // Nút "Play Again"
             Button(
                 onClick = {
                     MediaPlayer.create(context, R.raw.touch).start()
-                    onPlayAgain()
+                    onNavigateToGame()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = MaterialTheme.shapes.extraLarge, // Bo tròn hơn
+                shape = MaterialTheme.shapes.extraLarge,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = Color.White
@@ -77,7 +77,23 @@ fun ResultScreen(result: String, finalWord: String, onPlayAgain: () -> Unit) {
                     )
                 )
             }
+
+            // ✅ Nút "Menu" ngay bên dưới
+            OutlinedButton(
+                onClick = {
+                    MediaPlayer.create(context, R.raw.touch).start()
+                    onNavigateToMenu()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = MaterialTheme.shapes.extraLarge
+            ) {
+                Text(
+                    text = "Menu",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 }
-

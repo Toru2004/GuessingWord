@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun GameScreen(
     viewModel: WordGuessViewModel,
-    onGameOver: (String) -> Unit
+    onGameOver: (String) -> Unit,
+    onExit: () -> Unit // ✅ Thêm callback này
 ) {
     val lives by viewModel.lives.collectAsState()
     val guessedLetters by viewModel.guessedLetters.collectAsState()
@@ -27,49 +28,62 @@ fun GameScreen(
     LaunchedEffect(gameResult) {
         gameResult?.let {
             val finalWord = viewModel.currentWordToGuess
-            onGameOver("$it|$finalWord") // Truyền cả kết quả và từ cần đoán
+            onGameOver("$it|$finalWord")
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center, // Đưa toàn bộ vào giữa
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Lives left: $lives", style = MaterialTheme.typography.titleLarge)
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Toàn bộ nội dung chính
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Lives left: $lives", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(16.dp))
 
-        Spacer(Modifier.height(16.dp))
+            Surface(tonalElevation = 6.dp, shape = MaterialTheme.shapes.large) {
+                Text(
+                    text = displayWord,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
 
-        Surface(tonalElevation = 6.dp, shape = MaterialTheme.shapes.large) {
-            Text(
-                text = displayWord,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(16.dp)
+            Spacer(Modifier.height(24.dp))
+
+            Text("Pick a letter:", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(12.dp))
+
+            AlphabetGrid(
+                guessedLetters = guessedLetters,
+                onLetterClick = { letter ->
+                    viewModel.guessLetter(letter)
+                    val soundId = if (viewModel.currentWordToGuess.contains(letter)) R.raw.correct else R.raw.wrong
+                    MediaPlayer.create(context, soundId).start()
+                }
             )
         }
 
-        Spacer(Modifier.height(24.dp))
+        // ✅ Nút Exit ở góc trên bên phải
+        Button(
+            onClick = onExit,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary, // 🎨 Màu nền
+                contentColor = MaterialTheme.colorScheme.onPrimary  // 🎨 Màu chữ
+            )
+        ) {
+            Text("Menu", style = MaterialTheme.typography.labelLarge)
+        }
 
-        Text("Pick a letter:", style = MaterialTheme.typography.titleMedium)
-
-        Spacer(Modifier.height(12.dp))
-
-        AlphabetGrid(
-            guessedLetters = guessedLetters,
-            onLetterClick = { letter ->
-                viewModel.guessLetter(letter)
-                val soundId = if (viewModel.currentWordToGuess.contains(letter)) R.raw.correct else R.raw.wrong
-                MediaPlayer.create(context, soundId).start()
-            }
-        )
-
-//        if (showConfetti.value) {
-//            ConfettiAnimation()
-//        }
     }
 }
+
 
 @Composable
 fun AlphabetGrid(
