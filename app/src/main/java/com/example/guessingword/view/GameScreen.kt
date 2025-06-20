@@ -103,8 +103,8 @@ fun GameScreen(
             onClick = onExit,
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(16.dp),
-            colors = ButtonDefaults.buttonColors(
+                .padding(WindowInsets.statusBars.asPaddingValues()),
+                    colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             )
