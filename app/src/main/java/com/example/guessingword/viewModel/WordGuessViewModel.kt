@@ -1,9 +1,11 @@
 package com.example.guessingword.viewModel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class WordGuessViewModel : ViewModel() {
@@ -25,6 +27,9 @@ class WordGuessViewModel : ViewModel() {
     private val _gameResult = MutableStateFlow<String?>(null)
     val gameResult: StateFlow<String?> = _gameResult.asStateFlow()
 
+    private val _lastGuessCorrect = MutableStateFlow<Boolean?>(null)
+    val lastGuessCorrect: StateFlow<Boolean?> = _lastGuessCorrect.asStateFlow()
+
     // Từ hiện tại cần đoán
     var currentWordToGuess: String = wordList.random().uppercase()
 
@@ -34,10 +39,20 @@ class WordGuessViewModel : ViewModel() {
             return
 
         _guessedLetters.value += letter
-        if (letter !in currentWordToGuess) {
+        val isCorrect = letter in currentWordToGuess
+        _lastGuessCorrect.value = isCorrect
+
+        if (!isCorrect) {
             _lives.value -= 1
         }
+
         checkGameStatus()
+
+        // Reset after 500ms
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(500L)
+            _lastGuessCorrect.value = null
+        }
     }
 
     fun getDisplayWord(): String =

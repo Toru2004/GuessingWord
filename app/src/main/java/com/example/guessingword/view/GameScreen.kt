@@ -22,10 +22,9 @@ fun GameScreen(
     val lives by viewModel.lives.collectAsState()
     val guessedLetters by viewModel.guessedLetters.collectAsState()
     val gameResult by viewModel.gameResult.collectAsState()
+    val lastGuessCorrect by viewModel.lastGuessCorrect.collectAsState()
     val context = LocalContext.current
     val displayWord = viewModel.getDisplayWord()
-
-    var lastGuessCorrect by remember { mutableStateOf<Boolean?>(null) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(gameResult) {
@@ -83,18 +82,11 @@ fun GameScreen(
                 guessedLetters = guessedLetters,
                 onLetterClick = { letter ->
                     val isCorrect = viewModel.currentWordToGuess.contains(letter)
-                    viewModel.guessLetter(letter)
-
                     val soundId = if (isCorrect) R.raw.correct else R.raw.wrong
+
                     MediaPlayer.create(context, soundId).start()
 
-                    lastGuessCorrect = isCorrect
-
-                    // Reset sau 1 giây
-                    scope.launch {
-                        delay(500L)
-                        lastGuessCorrect = null
-                    }
+                    viewModel.guessLetter(letter)
                 }
             )
         }
