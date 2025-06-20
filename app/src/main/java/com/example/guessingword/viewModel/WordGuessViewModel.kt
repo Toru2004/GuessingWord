@@ -29,7 +29,9 @@ class WordGuessViewModel : ViewModel() {
     var currentWordToGuess: String = wordList.random().uppercase()
 
     fun guessLetter(letter: Char) {
-        if (letter in _guessedLetters.value || _gameResult.value != null) return
+        if (letter in _guessedLetters.value ||
+            _gameResult.value != null)
+            return
 
         _guessedLetters.value += letter
         if (letter !in currentWordToGuess) {

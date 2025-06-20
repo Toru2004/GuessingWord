@@ -17,13 +17,16 @@ import kotlinx.coroutines.launch
 fun GameScreen(
     viewModel: WordGuessViewModel,
     onGameOver: (String) -> Unit,
-    onExit: () -> Unit // ✅ Thêm callback này
+    onExit: () -> Unit
 ) {
     val lives by viewModel.lives.collectAsState()
     val guessedLetters by viewModel.guessedLetters.collectAsState()
     val gameResult by viewModel.gameResult.collectAsState()
     val context = LocalContext.current
     val displayWord = viewModel.getDisplayWord()
+
+    var lastGuessCorrect by remember { mutableStateOf<Boolean?>(null) }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(gameResult) {
         gameResult?.let {
@@ -33,7 +36,6 @@ fun GameScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Toàn bộ nội dung chính
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -44,12 +46,32 @@ fun GameScreen(
             Text("Lives left: $lives", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(16.dp))
 
-            Surface(tonalElevation = 6.dp, shape = MaterialTheme.shapes.large) {
-                Text(
-                    text = displayWord,
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
+            // 🟢 Word Display + Feedback
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(tonalElevation = 6.dp, shape = MaterialTheme.shapes.large) {
+                    Text(
+                        text = displayWord,
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                Spacer(Modifier.width(8.dp))
+
+                // ✅ Icon giữ kích thước cố định để không đẩy chữ
+                Box(
+                    modifier = Modifier
+                        .size(32.dp), // ⬅️ Đảm bảo kích thước cố định
+                    contentAlignment = Alignment.Center
+                ) {
+                    when (lastGuessCorrect) {
+                        true -> Text("✅", style = MaterialTheme.typography.headlineMedium)
+                        false -> Text("❌", style = MaterialTheme.typography.headlineMedium)
+                        null -> {} // để trống, vẫn chiếm không gian
+                    }
+                }
             }
 
             Spacer(Modifier.height(24.dp))
@@ -60,30 +82,37 @@ fun GameScreen(
             AlphabetGrid(
                 guessedLetters = guessedLetters,
                 onLetterClick = { letter ->
+                    val isCorrect = viewModel.currentWordToGuess.contains(letter)
                     viewModel.guessLetter(letter)
-                    val soundId = if (viewModel.currentWordToGuess.contains(letter)) R.raw.correct else R.raw.wrong
+
+                    val soundId = if (isCorrect) R.raw.correct else R.raw.wrong
                     MediaPlayer.create(context, soundId).start()
+
+                    lastGuessCorrect = isCorrect
+
+                    // Reset sau 1 giây
+                    scope.launch {
+                        delay(500L)
+                        lastGuessCorrect = null
+                    }
                 }
             )
         }
 
-        // ✅ Nút Exit ở góc trên bên phải
         Button(
             onClick = onExit,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary, // 🎨 Màu nền
-                contentColor = MaterialTheme.colorScheme.onPrimary  // 🎨 Màu chữ
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
             Text("Menu", style = MaterialTheme.typography.labelLarge)
         }
-
     }
 }
-
 
 @Composable
 fun AlphabetGrid(
